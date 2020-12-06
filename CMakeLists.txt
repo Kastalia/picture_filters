@@ -9,7 +9,7 @@ add_executable(
         wild_pic
         main.cu
         filter_linear.cu
-        filter_median.cu)
+        filter_median.cu histogram_brightness.cu)
 
 set_target_properties(
         wild_pic
