@@ -2,7 +2,7 @@
 #include <opencv2/opencv.hpp>
 
 // kernel
-__global__ void filter_linear_apply(uint8_t* picture, uint8_t* picture_blur) {
+__global__ void filter_linear_apply_bgr(const uint8_t* picture, uint8_t* picture_blur) {
   size_t sum_filter = 0;
   uint8_t filter[25];
   for (auto &f : filter) {
@@ -15,13 +15,6 @@ __global__ void filter_linear_apply(uint8_t* picture, uint8_t* picture_blur) {
   uint8_t partpic_green;
   uint8_t partpic_red;
   size_t pos_pixel = 0;
-
-  //picture_blur[3 * i * blockDim.x + 3 * j] = 255;
-  //picture_blur[3 * i * blockDim.x + 3 * j + 1] = 255;
-  //picture_blur[3 * i * blockDim.x + 3 * j + 2] = 0;
-  //printf("%d ",picture[3 * i * blockDim.x + 3 * j + 2]);
-
-  //printf("gDim.x_rows_=%d  bDim.x_columns_=%d bIdx.x_i_=%d  tIdx.x_j_=%d pic_blue=%d filter_blue=%d\n", gridDim.x, blockDim.x, blockIdx.x, threadIdx.x, picture[3 * i * blockDim.x + 3 * j], picture_blur[3 * i * blockDim.x + 3 * j]);
 
   for(int k=-2;k<=2; k++)
   {
@@ -46,6 +39,7 @@ __global__ void filter_linear_apply(uint8_t* picture, uint8_t* picture_blur) {
 	  picture_blur[pos_pixel*3+2]+=1.0/sum_filter*filter[(k+2)*5+l+2]*partpic_red;
 	};
   };
+  __syncthreads();
   /*
    * GUIDE:
   for(int k=-2;k<=2; k++)
@@ -57,13 +51,11 @@ __global__ void filter_linear_apply(uint8_t* picture, uint8_t* picture_blur) {
   }
   cudaDeviceSynchronize();
   */
-  __syncthreads();
-
 }
 
 
 
-__host__ void filter_linear(const uint8_t* h_input, uint8_t* h_output, size_t n_row, size_t n_col) {
+__host__ void filter_linear_bgr(const uint8_t* h_input, uint8_t* h_output, size_t n_row, size_t n_col) {
   size_t size = sizeof(uint8_t) * n_row * n_col * 3;
   uint8_t* d_input;
   cudaMalloc(&d_input, size);
@@ -73,7 +65,7 @@ __host__ void filter_linear(const uint8_t* h_input, uint8_t* h_output, size_t n_
   cudaMalloc(&d_output, size);
   cudaMemset(d_output, 0, size);
 
-  filter_linear_apply<<<
+  filter_linear_apply_bgr<<<
   dim3(n_row,1,1),
   dim3(n_col, 1, 1)
   >>>(d_input, d_output);
