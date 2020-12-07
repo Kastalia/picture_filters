@@ -7,7 +7,7 @@ __global__ void calculate_histogram_brightness_hsv_kernel(const uint8_t* picture
   size_t j = threadIdx.x;
 
   uint8_t brightness = picture[(i*blockDim.x+j)*3+2];
-  histogram_brightness[brightness] += 1;
+  atomicAdd(histogram_brightness+brightness,1);
   __syncthreads();
 }
 

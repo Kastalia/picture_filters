@@ -48,9 +48,11 @@ int main() {
   stop_s = clock();
   std::cout << "Time for the GPU calculate histogram brightness: " << (stop_s - start_s) / double(CLOCKS_PER_SEC) * 1000 <<  " ms" << std::endl;
 
+  int32_t sum_pixels=0;
   for(auto& elem:hist_brightness){
-	std::cout<<elem<<" ";
+	std::cout<<elem<<" "<<std::endl;
+	sum_pixels+=elem;
   }
-
+  std::cout<<"Сумма="<<sum_pixels<<std::endl;
   cv::waitKey();
 }
